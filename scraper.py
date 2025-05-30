@@ -15,7 +15,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import requests
 from bs4 import BeautifulSoup
@@ -399,8 +399,12 @@ class WebsiteScraper(NewsScraper):
                             break
                         except ValueError:
                             continue
+                    # Ensure timezone consistency (convert to naive UTC)
+                    if published_date.tzinfo is not None:
+                        published_date = published_date.astimezone(timezone.utc).replace(tzinfo=None)
                 except Exception:
                     # Keep default date if parsing fails
+                    published_date = datetime.now() # Ensure it's naive
                     pass
             
             # Extract image
@@ -466,12 +470,17 @@ class RSSFeedScraper(NewsScraper):
                             continue
                         
                         # Extract published date
-                        published_date = datetime.now()
-                        if "published_parsed" in entry:
-                            published_date = datetime(*entry.published_parsed[:6])
-                        elif "updated_parsed" in entry:
-                            published_date = datetime(*entry.updated_parsed[:6])
+                        published_date_dt = datetime.now() # Default
+                        if "published_parsed" in entry and entry.published_parsed:
+                            published_date_dt = datetime(*entry.published_parsed[:6])
+                        elif "updated_parsed" in entry and entry.updated_parsed:
+                            published_date_dt = datetime(*entry.updated_parsed[:6])
                         
+                        # Ensure timezone consistency (convert to naive UTC)
+                        if published_date_dt.tzinfo is not None:
+                            published_date_dt = published_date_dt.astimezone(timezone.utc).replace(tzinfo=None)
+                        published_date = published_date_dt # Assign to the variable used later
+
                         # Skip if too old
                         age_days = (datetime.now() - published_date).days
                         if age_days > self.max_age_days:
@@ -585,7 +594,7 @@ class NewsScraperManager:
         else:
             # Use default configuration
             self._init_default_scrapers()
-    
+
     def _init_scrapers_from_config(self):
         """Initialize scrapers from configuration file."""
         for scraper_config in self.config.get("scrapers", []):
@@ -632,6 +641,108 @@ class NewsScraperManager:
                     "title_selector": "h1",
                     "content_selector": "div.article-body",
                     "date_selector": "time"
+                },
+                {
+                    "url": "https://www.nytimes.com",
+                    "title_selector": "h1",
+                    "content_selector": "section[name=\"articleBody\"]",
+                    "date_selector": "time"
+                },
+                {
+                    "url": "https://www.theguardian.com",
+                    "title_selector": "h1",
+                    "content_selector": "div[data-gu-name=\"body\"]",
+                    "date_selector": "time"
+                },
+                {
+                    "url": "https://www.bloomberg.com",
+                    "title_selector": "h1[class*=\"headline__ μεγάλο\"]",
+                    "content_selector": "div[class*=\"body-copy\"]",
+                    "date_selector": "time"
+                },
+                {
+                    "url": "https://www.ft.com",
+                    "title_selector": "h1.article-headline",
+                    "content_selector": "div.article__body",
+                    "date_selector": "time.article-timestamp"
+                },
+                {
+                    "url": "https://www.marketwatch.com",
+                    "title_selector": "h1.article__headline",
+                    "content_selector": "div.article__body",
+                    "date_selector": "time.timestamp"
+                },
+                {
+                    "url": "https://futurism.com",
+                    "title_selector": "h1.entry-title",
+                    "content_selector": "div.entry-content",
+                    "date_selector": "time.entry-date"
+                },
+                {
+                    "url": "https://www.sciencedaily.com",
+                    "title_selector": "h1#headline",
+                    "content_selector": "div#story_text",
+                    "date_selector": "#date_posted"
+                },
+                {
+                    "url": "https://www.theverge.com",
+                    "title_selector": "h1",
+                    "content_selector": "div.duet--article--article-body-component",
+                    "date_selector": "time"
+                },
+                {
+                    "url": "https://www.wired.com",
+                    "title_selector": "h1",
+                    "content_selector": "div[class*=\"article-body-component\"]",
+                    "date_selector": "time[class*=\"date-mdy\"]"
+                },
+                {
+                    "url": "https://www.motortrend.com",
+                    "title_selector": "h1.article-title",
+                    "content_selector": "div.article-body",
+                    "date_selector": "span.meta-date"
+                },
+                {
+                    "url": "https://www.caranddriver.com",
+                    "title_selector": "h1.content-title",
+                    "content_selector": "div.article-body-content",
+                    "date_selector": "span.content-meta-date"
+                },
+                {
+                    "url": "https://www.thedrive.com",
+                    "title_selector": "h1.page-title",
+                    "content_selector": "div.article-content",
+                    "date_selector": "time.article-date"
+                },
+                {
+                    "url": "https://jalopnik.com",
+                    "title_selector": "h1.sc-1efpnfq-0",
+                    "content_selector": "div.js_post-content",
+                    "date_selector": "time.sc-1vk1pxv-0"
+                },
+                {
+                    "url": "https://www.golfdigest.com",
+                    "title_selector": "h1.content-title",
+                    "content_selector": "div.article-body",
+                    "date_selector": "time.publish-date"
+                },
+                {
+                    "url": "https://www.carolinasgolf.org", # For Golf Carolina, as per note
+                    "title_selector": "h1.entry-title",
+                    "content_selector": "div.entry-content",
+                    "date_selector": "time.published"
+                },
+                {
+                    "url": "https://www.carolinasgolf.org/", # Explicit entry for Carolinas Golf Association
+                    "title_selector": "h1.entry-title",
+                    "content_selector": "div.entry-content",
+                    "date_selector": "time.published"
+                },
+                {
+                    "url": "https://www.pinehurst.com/news/",
+                    "title_selector": "h1.entry-title",
+                    "content_selector": "div.entry-content",
+                    "date_selector": "p.blog-date"
                 }
             ],
             "timeout": 10
@@ -645,7 +756,25 @@ class NewsScraperManager:
                 "http://rss.cnn.com/rss/cnn_topstories.rss",
                 "http://feeds.bbci.co.uk/news/rss.xml",
                 "https://www.reddit.com/r/news/.rss",
-                "https://news.google.com/rss"
+                "https://news.google.com/rss",
+                "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+                "https://www.theguardian.com/world/rss",
+                "https://feeds.bloomberg.com/technology/news.rss",
+                "https://feeds.bloomberg.com/markets/news.rss",
+                "https://www.ft.com/rss/world",
+                "https://www.marketwatch.com/rss/topstories",
+                "https://futurism.com/feed",
+                "https://www.sciencedaily.com/rss/top.xml",
+                "https://www.theverge.com/rss/index.xml",
+                "https://www.wired.com/feed/rss",
+                "https://www.motortrend.com/rss/",
+                "https://www.caranddriver.com/rss/all.xml/",
+                "https://www.thedrive.com/feed",
+                "https://jalopnik.com/rss",
+                "https://www.golfdigest.com/rss",
+                "https://www.carolinasgolf.org/feed",
+                "https://www.pinehurst.com/feed/",
+                "https://www.reddit.com/r/cars/.rss"
             ],
             "max_age_days": 1
         }
