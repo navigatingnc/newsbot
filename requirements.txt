@@ -1,0 +1,16 @@
+beautifulsoup4==4.12.2
+requests==2.31.0
+feedparser==6.0.10
+scrapy==2.11.0
+nltk==3.8.1
+spacy==3.7.2
+fastapi==0.104.1
+uvicorn==0.24.0
+pillow==10.1.0
+python-dotenv==1.0.0
+apscheduler==3.10.4
+praw==7.7.1
+tweepy==4.14.0
+instagrapi==1.19.4
+sqlalchemy==2.0.23
+pydantic<3.0.0,>=1.7.4
