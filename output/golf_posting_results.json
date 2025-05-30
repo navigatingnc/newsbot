@@ -1,0 +1,35 @@
+[
+  {
+    "news_item": {
+      "title": "Carolinas Golf Association",
+      "url": "https://www.carolinasgolf.org/join-eclub",
+      "summary": "Join this club if you are a resident of Avery, Buncombe, Burke, Caldwell, Cherokee, Clay, Graham, Haywood, Henderson, Jackson, Macon, Madison, McDowell, Mitchell, Polk, Rutherford, Swain, Transylvania, Watauga, or Yancey County.",
+      "question": "Why is Henderson significant in this situation?",
+      "image_path": "images/41cbe28d1f.png"
+    },
+    "posting_time": "2025-05-30T19:26:58.730289",
+    "results": []
+  },
+  {
+    "news_item": {
+      "title": "FT Weekend",
+      "url": "https://www.ft.com/content/62b2ac6c-fe6e-4235-941a-5300fc52fa0f",
+      "summary": "FT Weekend",
+      "question": "What might be missing from this story?",
+      "image_path": "images/987695f724.png"
+    },
+    "posting_time": "2025-05-30T19:26:58.730903",
+    "results": []
+  },
+  {
+    "news_item": {
+      "title": "Golf | The Guardian",
+      "url": "https://www.theguardian.com/sport/golf",
+      "summary": "Golf | The Guardian",
+      "question": "Why is Guardian's role important in this context?",
+      "image_path": "images/1410449205.png"
+    },
+    "posting_time": "2025-05-30T19:26:58.731370",
+    "results": []
+  }
+]
