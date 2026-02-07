@@ -2,6 +2,7 @@
 
 ## Requirements and Planning
 - [x] Gather requirements from user
+- [x] Design AI guidance system for scheduled improvements
 - [ ] Design system architecture
   - [ ] Create component diagram
   - [ ] Define data flow

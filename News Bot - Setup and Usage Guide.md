@@ -11,6 +11,7 @@ The News Bot is a modular, replicable system designed to scrape news from variou
 - **Image Generation**: Creates relevant images for each news item
 - **Social Media Posting**: Posts to X (Twitter), Reddit, self-hosted forums, and Instagram
 - **User Interface**: Web-based interface for configuration and manual execution
+- **AI-Guided Improvements**: Framework for AI agents to perform scheduled application enhancements
 - **Replicable**: Create multiple bots with different configurations
 
 ## System Requirements
@@ -148,6 +149,14 @@ Example cron job for daily execution at 9 AM:
 ```
 0 9 * * * cd /path/to/news_bot && /path/to/python src/main.py --topic "your topic" --config config.json
 ```
+
+### AI-Guided Improvements
+
+The News Bot includes a framework for AI agents to automatically improve the application.
+
+1. **AI Improvement Guide**: See `AI_IMPROVEMENT_GUIDE.md` for the full framework.
+2. **Configuration**: AI task settings are located in `ai_tasks_config.json`.
+3. **Execution**: AI agents can be scheduled to review `todo.md` and implement the next high-priority task.
 
 ## Project Structure
 

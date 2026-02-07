@@ -1,0 +1,18 @@
+{
+  "scheduled_improvements": {
+    "enabled": true,
+    "frequency": "weekly",
+    "day_of_week": "Sunday",
+    "time": "00:00",
+    "ai_instructions": "Review AI_IMPROVEMENT_GUIDE.md and todo.md. Select the highest priority pending task and implement it. Ensure you run verification tests before committing changes.",
+    "priority_modules": [
+      "ui.py",
+      "scraper.py",
+      "processor.py"
+    ]
+  },
+  "audit_logs": {
+    "enabled": true,
+    "path": "logs/ai_improvements.log"
+  }
+}
