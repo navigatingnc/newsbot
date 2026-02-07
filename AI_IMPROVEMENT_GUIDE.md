@@ -26,6 +26,9 @@ Based on the current `todo.md`, the following areas are prioritized:
 
 ## 3. Execution Instructions for AI
 
+> **Guardrail: Efficiency Limit**
+> To ensure cost-effectiveness and focus, each improvement task MUST NOT exceed a total of **300 tokens** for the implementation plan and code generation combined. The AI should prioritize concise, high-impact changes.
+
 When triggered for a scheduled improvement task, the AI should:
 
 ### Step 1: Context Gathering
