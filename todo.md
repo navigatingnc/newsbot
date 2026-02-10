@@ -1,8 +1,10 @@
 # News Bot Development Tasks
+**Notation for completed tasks:** [x] {AgentName} Task description
+
 
 ## Requirements and Planning
-- [x] Gather requirements from user
-- [x] Design AI guidance system for scheduled improvements
+- [x] {Unknown} Gather requirements from user
+- [x] {Unknown} Design AI guidance system for scheduled improvements
 - [ ] Design system architecture
   - [ ] Create component diagram
   - [ ] Define data flow
@@ -10,21 +12,21 @@
   - [ ] Outline technology stack
 
 ## Core Implementation
-- [x] Implement news scraper
-  - [x] Google search integration
-  - [x] Website scraping functionality
-  - [x] RSS feed parser
-- [x] Develop content summarizer
-  - [x] Create text summarization module
-  - [x] Implement question generator
-- [x] Integrate image generation
-  - [x] Design image generation module
-  - [x] Ensure images represent news topics
-- [x] Automate posting to platforms
-  - [x] X (Twitter) integration
-  - [x] Reddit integration
-  - [x] Self-hosted forum integration
-  - [x] Instagram integration
+- [x] {Unknown} Implement news scraper
+  - [x] {Unknown} Google search integration
+  - [x] {Unknown} Website scraping functionality
+  - [x] {Unknown} RSS feed parser
+- [x] {Unknown} Develop content summarizer
+  - [x] {Unknown} Create text summarization module
+  - [x] {Unknown} Implement question generator
+- [x] {Unknown} Integrate image generation
+  - [x] {Unknown} Design image generation module
+  - [x] {Unknown} Ensure images represent news topics
+- [x] {Unknown} Automate posting to platforms
+  - [x] {Unknown} X (Twitter) integration
+  - [x] {Unknown} Reddit integration
+  - [x] {Unknown} Self-hosted forum integration
+  - [x] {Unknown} Instagram integration
 
 ## Advanced Features & Improvements
 ### Scraper Enhancements
