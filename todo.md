@@ -61,12 +61,12 @@
 - [ ] Implement an automated backup system for processed news
 
 ## Testing and Quality Assurance
-- [ ] Validate system functionality
-  - [ ] Test scraping from multiple sources
-  - [ ] Test summarization quality
-  - [ ] Test image generation
-  - [ ] Test posting to platforms
-- [ ] Implement automated unit tests for all modules
+- [x] Validate system functionality
+  - [x] Test scraping from multiple sources
+  - [x] Test summarization quality
+  - [x] Test image generation
+  - [x] Test posting to platforms
+- [x] Implement automated unit tests for core modules
 - [ ] Set up CI/CD pipeline via GitHub Actions
 - [ ] Document usage instructions
 - [ ] Deliver final solution to user
