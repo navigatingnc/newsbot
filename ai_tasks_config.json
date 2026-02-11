@@ -4,7 +4,7 @@
     "frequency": "weekly",
     "day_of_week": "Sunday",
     "time": "00:00",
-    "ai_instructions": "Review AI_IMPROVEMENT_GUIDE.md and todo.md. Select the highest priority pending task and implement it. CRITICAL: Your implementation plan and code must not exceed 300 tokens in total. Ensure you run verification tests before committing changes.",
+    "ai_instructions": "Review AI_IMPROVEMENT_GUIDE.md and todo.md. Select the highest priority pending task and implement it. CRITICAL: The 300 token limit applies only to the Manus AI agent. Ensure you run verification tests and update todo.md using the {AgentName} notation before committing changes.",
     "priority_modules": [
       "ui.py",
       "scraper.py",

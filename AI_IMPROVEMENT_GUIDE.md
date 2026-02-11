@@ -26,8 +26,8 @@ Based on the current `todo.md`, the following areas are prioritized:
 
 ## 3. Execution Instructions for AI
 
-> **Guardrail: Efficiency Limit**
-> To ensure cost-effectiveness and focus, each improvement task MUST NOT exceed a total of **300 tokens** for the implementation plan and code generation combined. The AI should prioritize concise, high-impact changes.
+> **Guardrail: Efficiency Limit (Manus Only)**
+> To ensure cost-effectiveness and focus, the **Manus AI agent** MUST NOT exceed a total of **300 tokens** for the implementation plan and code generation combined. Other AI agents are not subject to this limit. The AI should prioritize concise, high-impact changes.
 
 When triggered for a scheduled improvement task, the AI should:
 
@@ -50,7 +50,7 @@ tail -n 100 news_bot.log
 - Check `news_bot.log` for any new warnings or errors.
 
 ### Step 4: Finalization
-- Update `todo.md` to mark the task as completed.
+- Update `todo.md` to mark the task as completed using the notation `[x] {AgentName} Task description`.
 - Commit and push changes.
 
 ## 4. Scheduled Task Configuration
