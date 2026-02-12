@@ -13,6 +13,7 @@ import logging
 import random
 from typing import List, Dict, Any, Optional
 from abc import ABC, abstractmethod
+from nltk.sentiment import SentimentIntensityAnalyzer
 
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
@@ -27,9 +28,19 @@ except LookupError:
     nltk.download('punkt')
 
 try:
+    nltk.data.find('tokenizers/punkt_tab')
+except LookupError:
+    nltk.download('punkt_tab')
+
+try:
     nltk.data.find('corpora/stopwords')
 except LookupError:
     nltk.download('stopwords')
+
+try:
+    nltk.data.find('sentiment/vader_lexicon')
+except LookupError:
+    nltk.download('vader_lexicon')
 
 # Configure logging
 logging.basicConfig(
@@ -401,8 +412,10 @@ class ContentProcessorManager:
     """Manager for coordinating content processing."""
     
     def __init__(self, config: Dict[str, Any] = None):
+        self.sia = SentimentIntensityAnalyzer()
         if config is None:
             config = {}
+        self.config = config
             
         # Create summarizer
         summarizer_config = config.get("summarizer", {
@@ -430,6 +443,13 @@ class ContentProcessorManager:
         Returns:
             Processed NewsItem
         """
+        text = news_item.content or news_item.summary or news_item.title
+        sentiment = self.sia.polarity_scores(text)
+        news_item.sentiment = sentiment
+        if sentiment['compound'] < self.config.get("sentiment_threshold", -0.5):
+            logger.info(f"Skipping negative news: {news_item.title} ({sentiment['compound']})")
+            return None
+
         # Use existing summary if available, otherwise generate from content
         if not news_item.summary and news_item.content:
             news_item.summary = self.summarizer.process(news_item.content)
@@ -463,10 +483,11 @@ class ContentProcessorManager:
         for item in news_items:
             try:
                 processed_item = self.process_news_item(item)
-                processed_items.append(processed_item)
+                if processed_item:
+                    processed_items.append(processed_item)
             except Exception as e:
                 logger.error(f"Error processing news item: {e}")
-                processed_items.append(item)  # Keep the original item
+                processed_items.append(item)
         
         return processed_items
 
