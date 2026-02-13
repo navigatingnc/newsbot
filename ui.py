@@ -155,6 +155,9 @@ def create_templates():
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Settings</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="scheduling-tab" data-bs-toggle="tab" data-bs-target="#scheduling" type="button" role="tab" aria-controls="scheduling" aria-selected="false">Scheduling</button>
+                </li>
             </ul>
             
             <div class="tab-content" id="myTabContent">
@@ -285,6 +288,26 @@ def create_templates():
                         </div>
                         
                         <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </form>
+                </div>
+                
+                <!-- Scheduling Tab -->
+                <div class="tab-pane fade" id="scheduling" role="tabpanel" aria-labelledby="scheduling-tab">
+                    <h3>Bot Scheduling</h3>
+                    <form action="/schedule" method="post">
+                        <div class="form-group">
+                            <label for="schedule_topic" class="form-label">Topic to Schedule:</label>
+                            <input type="text" class="form-control" id="schedule_topic" name="topic" value="{{ config.scheduling.topic if config.scheduling else '' }}" placeholder="e.g., AI news">
+                        </div>
+                        <div class="form-group">
+                            <label for="cron" class="form-label">Cron Expression:</label>
+                            <input type="text" class="form-control" id="cron" name="cron" value="{{ config.scheduling.cron if config.scheduling else '0 0 * * *' }}" placeholder="0 0 * * * (Daily at midnight)">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="enabled" id="sched_enabled" {% if config.scheduling and config.scheduling.enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="sched_enabled">Enable Schedule</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Schedule</button>
                     </form>
                 </div>
             </div>
@@ -637,6 +660,13 @@ async def save_settings(
     # Save config
     news_bot.save_config(config_path)
     
+    return RedirectResponse(url="/", status_code=303)
+
+@app.post("/schedule", response_class=RedirectResponse)
+async def save_schedule(request: Request, topic: str = Form(...), cron: str = Form("0 0 * * *"), enabled: bool = Form(False)):
+    if news_bot is None: init_bot()
+    news_bot.config["scheduling"] = {"topic": topic, "cron": cron, "enabled": enabled}
+    news_bot.save_config(config_path)
     return RedirectResponse(url="/", status_code=303)
 
 def start():
