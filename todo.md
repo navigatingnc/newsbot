@@ -49,7 +49,7 @@
 
 ### Platform Integration
 - [ ] Add LinkedIn Company Page posting support
-- [ ] Implement Discord Webhook integration for notifications
+- [x] {Manus} Implement Discord Webhook integration for notifications
 - [ ] Add Telegram Bot channel posting
 - [ ] Create a Mastodon posting module
 
