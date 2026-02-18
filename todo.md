@@ -55,9 +55,9 @@
 
 ## Infrastructure & UI
 - [ ] Create user interface
-  - [ ] Topic configuration interface
-  - [ ] Destination selection interface
-  - [ ] Scheduling options
+  - [x] {Manus} Topic configuration interface
+  - [x] {Manus} Destination selection interface
+  - [x] {Manus} Scheduling options
 - [ ] Implement a centralized Dashboard for bot performance metrics
 - [ ] Add Docker support for easy deployment
 - [ ] Implement an automated backup system for processed news

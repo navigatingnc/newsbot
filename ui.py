@@ -5,6 +5,7 @@ This module provides a simple web interface for the News Bot:
 1. Topic Configuration
 2. Destination Selection
 3. Manual Execution
+4. Scheduling Options
 """
 
 import os
@@ -18,6 +19,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uvicorn
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from main import NewsBot
 
@@ -44,6 +48,61 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Global bot instance
 news_bot = None
 config_path = "config.json"
+schedule_path = "schedule.json"
+
+# Scheduler
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+
+def _run_scheduled_topic(topic: str):
+    """Execute the bot pipeline for a scheduled topic."""
+    if news_bot is None:
+        init_bot()
+    logger.info(f"Scheduled run triggered for topic: {topic}")
+    try:
+        news_bot.run(topic)
+    except Exception as exc:
+        logger.error(f"Scheduled run failed for topic '{topic}': {exc}")
+
+
+def load_schedules():
+    """Load persisted schedules from disk and register them with APScheduler."""
+    if not os.path.exists(schedule_path):
+        return
+    with open(schedule_path) as f:
+        schedules = json.load(f)
+    for sched in schedules:
+        _register_job(sched["id"], sched["topic"], sched["cron"])
+
+
+def save_schedules(schedules: list):
+    """Persist schedule list to disk."""
+    with open(schedule_path, "w") as f:
+        json.dump(schedules, f, indent=2)
+
+
+def get_schedules() -> list:
+    """Return current schedule list from disk."""
+    if not os.path.exists(schedule_path):
+        return []
+    with open(schedule_path) as f:
+        return json.load(f)
+
+
+def _register_job(job_id: str, topic: str, cron: str):
+    """Register or replace an APScheduler job."""
+    parts = cron.split()
+    if len(parts) != 5:
+        raise ValueError(f"Invalid cron expression (need 5 fields): {cron}")
+    minute, hour, day, month, day_of_week = parts
+    trigger = CronTrigger(
+        minute=minute, hour=hour, day=day,
+        month=month, day_of_week=day_of_week
+    )
+    if scheduler.get_job(job_id):
+        scheduler.remove_job(job_id)
+    scheduler.add_job(_run_scheduled_topic, trigger, id=job_id, args=[topic])
 
 # Default configuration
 default_config = {
@@ -155,6 +214,9 @@ def create_templates():
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Settings</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab" aria-controls="schedule" aria-selected="false">Scheduling</button>
+                </li>
             </ul>
             
             <div class="tab-content" id="myTabContent">
@@ -253,6 +315,50 @@ def create_templates():
                     </div>
                 </div>
                 
+                <!-- Scheduling Tab -->
+                <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+                    <h3>Scheduled Runs</h3>
+                    <p class="text-muted">Add recurring topics using standard 5-field cron expressions (e.g. <code>0 8 * * 1</code> = every Monday at 08:00).</p>
+
+                    <form action="/schedule/add" method="post" class="mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label for="sched_topic" class="form-label">Topic</label>
+                                <input type="text" class="form-control" id="sched_topic" name="topic" required placeholder="e.g. technology">
+                            </div>
+                            <div class="col-md-5">
+                                <label for="sched_cron" class="form-label">Cron Expression</label>
+                                <input type="text" class="form-control" id="sched_cron" name="cron" required placeholder="0 8 * * 1">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100">Add Schedule</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if schedules %}
+                    <table class="table table-bordered">
+                        <thead><tr><th>ID</th><th>Topic</th><th>Cron</th><th>Action</th></tr></thead>
+                        <tbody>
+                        {% for s in schedules %}
+                        <tr>
+                            <td>{{ s.id }}</td>
+                            <td>{{ s.topic }}</td>
+                            <td><code>{{ s.cron }}</code></td>
+                            <td>
+                                <form action="/schedule/delete/{{ s.id }}" method="post" style="display:inline">
+                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No schedules configured yet.</p>
+                    {% endif %}
+                </div>
+
                 <!-- Settings Tab -->
                 <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
                     <h3>Bot Settings</h3>
@@ -474,7 +580,8 @@ async def index(request: Request):
             "platforms": ["twitter", "reddit", "forum", "instagram"],
             "enabled_platforms": enabled_platforms,
             "config": news_bot.config,
-            "results": []
+            "results": [],
+            "schedules": get_schedules()
         }
     )
 
@@ -508,7 +615,8 @@ async def run_bot(request: Request, topic: str = Form(...), selected_platforms: 
             "platforms": ["twitter", "reddit", "forum", "instagram"],
             "enabled_platforms": enabled_platforms,
             "config": news_bot.config,
-            "results": results
+            "results": results,
+            "schedules": get_schedules()
         }
     )
 
@@ -639,11 +747,38 @@ async def save_settings(
     
     return RedirectResponse(url="/", status_code=303)
 
+@app.post("/schedule/add", response_class=RedirectResponse)
+async def add_schedule(topic: str = Form(...), cron: str = Form(...)):
+    """Add a new scheduled topic."""
+    import uuid
+    schedules = get_schedules()
+    job_id = str(uuid.uuid4())[:8]
+    entry = {"id": job_id, "topic": topic, "cron": cron}
+    try:
+        _register_job(job_id, topic, cron)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    schedules.append(entry)
+    save_schedules(schedules)
+    return RedirectResponse(url="/#schedule", status_code=303)
+
+
+@app.post("/schedule/delete/{job_id}", response_class=RedirectResponse)
+async def delete_schedule(job_id: str):
+    """Remove a scheduled topic."""
+    schedules = [s for s in get_schedules() if s["id"] != job_id]
+    save_schedules(schedules)
+    if scheduler.get_job(job_id):
+        scheduler.remove_job(job_id)
+    return RedirectResponse(url="/#schedule", status_code=303)
+
+
 def start():
     """Start the UI server."""
     # Initialize the bot
     init_bot()
-    
+    # Reload persisted schedules
+    load_schedules()
     # Start the server
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
