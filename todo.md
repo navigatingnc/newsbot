@@ -54,9 +54,9 @@
 - [ ] Create a Mastodon posting module
 
 ## Infrastructure & UI
-- [ ] Create user interface
-  - [ ] Topic configuration interface
-  - [ ] Destination selection interface
+- [x] {Jules} Create user interface
+  - [x] {Jules} Topic configuration interface
+  - [x] {Jules} Destination selection interface
   - [ ] Scheduling options
 - [ ] Implement a centralized Dashboard for bot performance metrics
 - [ ] Add Docker support for easy deployment
