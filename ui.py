@@ -153,6 +153,9 @@ def create_templates():
                     <button class="nav-link" id="platforms-tab" data-bs-toggle="tab" data-bs-target="#platforms" type="button" role="tab" aria-controls="platforms" aria-selected="false">Configure Platforms</button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="scheduling-tab" data-bs-toggle="tab" data-bs-target="#scheduling" type="button" role="tab" aria-controls="scheduling" aria-selected="false">Scheduling</button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Settings</button>
                 </li>
             </ul>
@@ -251,6 +254,27 @@ def create_templates():
                         </div>
                         <p>Status: {% if "instagram" in enabled_platforms %}Configured{% else %}Not Configured{% endif %}</p>
                     </div>
+                </div>
+                
+                <!-- Scheduling Tab -->
+                <div class="tab-pane fade" id="scheduling" role="tabpanel" aria-labelledby="scheduling-tab">
+                    <h3>Automated Scheduling</h3>
+                    <form action="/schedule" method="post">
+                        <div class="form-group">
+                            <label for="schedule_topic" class="form-label">Topic for Scheduled Runs:</label>
+                            <input type="text" class="form-control" id="schedule_topic" name="schedule_topic" value="{{ config.get('scheduling', {}).get('topic', '') }}" placeholder="e.g. Artificial Intelligence">
+                        </div>
+                        <div class="form-group">
+                            <label for="cron_schedule" class="form-label">Cron Expression:</label>
+                            <input type="text" class="form-control" id="cron_schedule" name="cron_schedule" value="{{ config.get('scheduling', {}).get('cron', '0 0 * * *') }}">
+                            <small class="text-muted">Example: 0 0 * * * (Daily at midnight)</small>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="schedule_enabled" id="schedule_enabled" {% if config.get('scheduling', {}).get('enabled') %}checked{% endif %}>
+                            <label class="form-check-label" for="schedule_enabled">Enable Automated Runs</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Schedule</button>
+                    </form>
                 </div>
                 
                 <!-- Settings Tab -->
@@ -637,6 +661,26 @@ async def save_settings(
     # Save config
     news_bot.save_config(config_path)
     
+    return RedirectResponse(url="/", status_code=303)
+
+@app.post("/schedule", response_class=RedirectResponse)
+async def save_schedule(
+    request: Request,
+    schedule_topic: str = Form(""),
+    cron_schedule: str = Form("0 0 * * *"),
+    schedule_enabled: bool = Form(False)
+):
+    """Save scheduling configuration."""
+    if news_bot is None:
+        init_bot()
+    
+    news_bot.config["scheduling"] = {
+        "topic": schedule_topic,
+        "cron": cron_schedule,
+        "enabled": schedule_enabled
+    }
+    
+    news_bot.save_config(config_path)
     return RedirectResponse(url="/", status_code=303)
 
 def start():
