@@ -578,6 +578,18 @@ class InstagramPoster(SocialMediaPoster):
             return {"success": False, "message": str(e)}
 
 
+class DiscordPoster(SocialMediaPoster):
+    def __init__(self, config):
+        super().__init__(config)
+        self.url = config.get("webhook_url", "")
+    def authenticate(self): return bool(self.url)
+    def post(self, title, content, image_path="", url=""):
+        data = {"embeds": [{"title": title, "description": content, "url": url}]}
+        if image_path: data["embeds"][0]["image"] = {"url": f"attachment://{os.path.basename(image_path)}"}
+        files = {"file": open(image_path, "rb")} if image_path else None
+        r = requests.post(self.url, data={"payload_json": json.dumps(data)}, files=files)
+        return {"success": r.status_code < 300, "message": r.text}
+
 class SocialMediaPosterFactory:
     """Factory for creating social media posters."""
     
@@ -601,6 +613,8 @@ class SocialMediaPosterFactory:
             return SelfHostedForumPoster(config)
         elif platform == "instagram":
             return InstagramPoster(config)
+        elif platform == "discord":
+            return DiscordPoster(config)
         else:
             raise ValueError(f"Unknown platform: {platform}")
 
